@@ -20,10 +20,23 @@ const views = {
   "1d": renderThanks,
 };
 
+const pendingTimeouts = [];
+
 function show(id) {
+  session.viewGen = (session.viewGen || 0) + 1;
+  pendingTimeouts.forEach(clearTimeout);
+  pendingTimeouts.length = 0;
   session.current = id;
   app.replaceChildren();
   views[id]();
+}
+
+function wait(ms) {
+  const gen = session.viewGen;
+  return new Promise((resolve) => {
+    const id = setTimeout(() => resolve(session.viewGen === gen), ms);
+    pendingTimeouts.push(id);
+  });
 }
 
 function el(tag, attrs = {}, children = []) {
@@ -247,7 +260,7 @@ function renderScreening() {
   next.addEventListener("click", () => {
     if (!isScreenComplete()) return;
     if (isScreenedOut()) show("1d");
-    else show("hold");
+    else show("4a");
   });
 
   app.append(
@@ -283,7 +296,7 @@ function renderHold() {
   app.append(
     el("h1", { text: "Dalsza część badania" }),
     el("p", {
-      text: "Kolejny etap (dane demograficzne) pojawi się w następnej iteracji.",
+      text: "Kolejny etap pojawi się w następnej iteracji.",
     })
   );
 }
